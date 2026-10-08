@@ -34,7 +34,7 @@ export const FormGuideCard: React.FC<FormGuideCardProps> = ({ guide }) => {
             </h3>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            YouCan execution cues & injury prevention standards
+            HyperState execution cues & injury prevention standards
           </p>
         </div>
 

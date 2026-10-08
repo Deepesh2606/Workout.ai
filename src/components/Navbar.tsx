@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, Dumbbell, Calendar, Flame, Activity } from 'lucide-react';
 import { ViewMode } from '../types/exercise';
+import { HyperStateLogo } from './HyperStateLogo';
 
 interface NavbarProps {
   currentView: ViewMode;
@@ -29,24 +30,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={() => onNavigate('home')}
-            className="flex items-center gap-2.5 text-left group cursor-pointer"
+            className="flex items-center text-left group cursor-pointer"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#FF334B] to-[#F97316] flex items-center justify-center text-white shadow-[0_0_15px_rgba(255,51,75,0.4)]">
-              <Activity className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base font-extrabold tracking-tight text-white group-hover:text-[#FF334B] transition-colors">
-                  YOUCAN
-                </span>
-                <span className="text-[10px] font-mono tracking-widest uppercase px-1.5 py-0.5 rounded bg-[#1A2433] text-cyan-400 border border-[#24344A]">
-                  VISUALIZER
-                </span>
-              </div>
-              <p className="text-[10px] text-slate-400 leading-none">
-                Biomechanical Muscle Atlas
-              </p>
-            </div>
+            <HyperStateLogo size={38} showText={true} />
           </button>
 
           {/* Desktop Navigation Links */}

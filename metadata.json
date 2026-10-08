@@ -1,6 +1,6 @@
 {
-  "name": "YouCan Exercise Visualizer",
-  "description": "Interactive muscle visualizer, workout planner, and exercise library with body heatmaps and form guides.",
+  "name": "HyperState",
+  "description": "Biomechanical muscle visualizer, hypertrophy workout planner, and exercise library with body heatmaps and form guides.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,6 +1,6 @@
-# YouCan Exercise Visualizer
+# HyperState
 
-A sleek, dark-themed exercise visualizer web app inspired by YouCan and modern fitness trackers. Built with React, Vite, Tailwind CSS, and `react-body-highlighter`.
+A sleek, dark-themed biomechanical muscle visualizer and hypertrophy workout planner. Built with React, Vite, Tailwind CSS, and `react-body-highlighter`.
 
 ## Features
 
@@ -18,7 +18,7 @@ A sleek, dark-themed exercise visualizer web app inspired by YouCan and modern f
    - **Interactive Body Diagram (`react-body-highlighter`)**: Highlights primary muscle targets in vibrant neon red (`#FF334B`) and secondary assisting muscles in warm amber (`#FB923C`), with an Anterior (Front) and Posterior (Back) toggle.
    - **Auto-Looping Slideshow**: Alternates smoothly between Phase 1 (Starting Position) and Phase 2 (Peak Contraction) using `yuhonas/free-exercise-db` assets. Includes play/pause, manual frame controls, and indicators.
    - **Step-by-Step Execution**: Clear numbered instructions for exact movement mechanics.
-   - **YouCan Form & Mistake Analysis**: Iconic segmented card with glowing neon green (`#10B981`) and neon red (`#EF4444`) borders:
+   - **HyperState Form & Mistake Analysis**: Iconic segmented card with glowing neon green (`#10B981`) and neon red (`#EF4444`) borders:
      - **Correct Form**: Key cues, scapular alignment, breathing mechanics, and tempo.
      - **Common Mistakes**: Frequent errors, injury risk factors, and immediate coaching corrections.
 
