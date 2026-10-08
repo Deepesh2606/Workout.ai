@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Calendar,
   Plus,
@@ -15,6 +15,11 @@ import {
   Pause,
   RotateCcw,
   Sparkles,
+  Eye,
+  ExternalLink,
+  LayoutGrid,
+  List,
+  X,
 } from 'lucide-react';
 import { WorkoutDayPlan, RawExercise, WorkoutItem } from '../types/exercise';
 import { getExerciseImageUrl } from '../services/exerciseService';
@@ -43,6 +48,9 @@ export const WorkoutBuilder: React.FC<WorkoutBuilderProps> = ({
   // Quick Exercise Picker modal state
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [modalMuscleFilter, setModalMuscleFilter] = useState('all');
+  const [modalViewMode, setModalViewMode] = useState<'list' | 'grid'>('list');
+  const [recentlyAddedId, setRecentlyAddedId] = useState<string | null>(null);
 
   // New plan modal / inline
   const [showNewPlanModal, setShowNewPlanModal] = useState(false);
@@ -164,7 +172,15 @@ export const WorkoutBuilder: React.FC<WorkoutBuilderProps> = ({
       items: [...currentPlan.items, newItem],
       updatedAt: new Date().toISOString(),
     });
+    setRecentlyAddedId(exercise.id);
+    setTimeout(() => {
+      setRecentlyAddedId((curr) => (curr === exercise.id ? null : curr));
+    }, 1800);
+  };
+
+  const handleOpenDetailFromModal = (exercise: RawExercise) => {
     setShowAddModal(false);
+    onSelectExerciseDetail(exercise);
   };
 
   const handleCreateNewPlan = (e: React.FormEvent) => {
@@ -197,15 +213,38 @@ export const WorkoutBuilder: React.FC<WorkoutBuilderProps> = ({
     }
   };
 
-  // Filtered exercises for add modal
-  const filteredModalExercises = allExercises
-    .filter((ex) =>
-      searchQuery
-        ? ex.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          ex.primaryMuscles.some((m) => m.toLowerCase().includes(searchQuery.toLowerCase()))
-        : true
-    )
-    .slice(0, 30);
+  // Filtered exercises for add modal with search, muscle category & generous limit
+  const filteredModalExercises = useMemo(() => {
+    return allExercises
+      .filter((ex) => {
+        const query = searchQuery.toLowerCase().trim();
+        const matchesQuery =
+          !query ||
+          ex.name.toLowerCase().includes(query) ||
+          ex.primaryMuscles.some((m) => m.toLowerCase().includes(query)) ||
+          (ex.equipment && ex.equipment.toLowerCase().includes(query));
+
+        const matchesMuscle =
+          modalMuscleFilter === 'all' ||
+          ex.primaryMuscles.some((m) => {
+            const norm = m.toLowerCase();
+            if (modalMuscleFilter === 'arms')
+              return norm.includes('bicep') || norm.includes('tricep') || norm.includes('forearm');
+            if (modalMuscleFilter === 'legs')
+              return (
+                norm.includes('quadricep') ||
+                norm.includes('hamstring') ||
+                norm.includes('calv') ||
+                norm.includes('glute')
+              );
+            if (modalMuscleFilter === 'core') return norm.includes('abdomin');
+            return norm.includes(modalMuscleFilter);
+          });
+
+        return matchesQuery && matchesMuscle;
+      })
+      .slice(0, 60);
+  }, [allExercises, searchQuery, modalMuscleFilter]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-4 sm:py-6 space-y-6">
@@ -395,25 +434,33 @@ export const WorkoutBuilder: React.FC<WorkoutBuilderProps> = ({
                 >
                   {/* Item Header */}
                   <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      {/* Image Thumbnail */}
+                    <div className="flex items-center gap-3.5">
+                      {/* Image Thumbnail - Bigger with hover inspect overlay */}
                       <div
                         onClick={() => onSelectExerciseDetail(item.exercise)}
-                        className="w-14 h-14 rounded-lg bg-[#0B0F14] border border-[#243142] overflow-hidden flex-shrink-0 cursor-pointer flex items-center justify-center group"
+                        className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-[#080B0F] border border-[#243142] overflow-hidden flex-shrink-0 cursor-pointer relative group/thumb flex items-center justify-center hover:border-[#FF334B]/60 transition"
+                        title="Click to view full exercise guide & biomechanics"
                       >
                         {item.exercise.images?.[0] ? (
                           <img
                             src={getExerciseImageUrl(item.exercise.images[0])}
                             alt={item.exercise.name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition duration-200"
+                            className="w-full h-full object-cover group-hover/thumb:scale-110 transition duration-300"
+                            loading="lazy"
                           />
                         ) : (
-                          <Dumbbell className="w-6 h-6 text-slate-500" />
+                          <Dumbbell className="w-7 h-7 text-slate-500" />
                         )}
+                        <div className="absolute inset-0 bg-black/55 opacity-0 group-hover/thumb:opacity-100 flex flex-col items-center justify-center gap-1 transition-opacity backdrop-blur-[1px] text-white">
+                          <Eye className="w-4 h-4 text-cyan-400" />
+                          <span className="text-[10px] font-bold tracking-wider uppercase text-cyan-200">
+                            Details
+                          </span>
+                        </div>
                       </div>
 
-                      <div>
-                        <div className="flex items-center gap-2">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
                           <span className="w-5 h-5 rounded-md bg-[#1C2634] text-slate-300 font-mono text-xs flex items-center justify-center font-bold">
                             {itemIdx + 1}
                           </span>
@@ -423,8 +470,17 @@ export const WorkoutBuilder: React.FC<WorkoutBuilderProps> = ({
                           >
                             {item.exercise.name}
                           </h3>
+                          <button
+                            type="button"
+                            onClick={() => onSelectExerciseDetail(item.exercise)}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#182333] hover:bg-[#223145] border border-[#26374D] text-cyan-400 hover:text-cyan-300 text-[11px] font-medium transition cursor-pointer"
+                            title="Inspect execution form & HyperState cues"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>View Details</span>
+                          </button>
                         </div>
-                        <div className="flex items-center gap-1.5 text-xs text-slate-400 mt-0.5">
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
                           <span className="text-[#FF334B] capitalize font-medium">
                             {item.exercise.primaryMuscles.join(', ')}
                           </span>
@@ -599,85 +655,384 @@ export const WorkoutBuilder: React.FC<WorkoutBuilderProps> = ({
         </div>
       )}
 
-      {/* Quick Exercise Add Modal */}
+      {/* Enhanced Exercise Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-          <div className="w-full max-w-2xl max-h-[85vh] rounded-2xl bg-[#0F141C] border border-[#232F3E] shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-4xl max-h-[90vh] rounded-2xl bg-[#0F141C] border border-[#232F3E] shadow-2xl flex flex-col overflow-hidden">
             {/* Modal Header */}
-            <div className="p-4 border-b border-[#1E2633] flex items-center justify-between gap-3">
+            <div className="p-4 sm:p-5 border-b border-[#1E2633] flex items-center justify-between gap-4">
               <div>
-                <h3 className="text-base font-bold text-white">Add Exercise to Routine</h3>
-                <p className="text-xs text-slate-400">
-                  Target: {currentPlan?.name}
-                </p>
+                <div className="flex items-center gap-2">
+                  <Dumbbell className="w-5 h-5 text-[#FF334B]" />
+                  <h3 className="text-base sm:text-lg font-bold text-white tracking-tight">
+                    Add Exercise to Routine
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
+                  <span>Target:</span>
+                  <span className="text-emerald-400 font-semibold">{currentPlan?.name}</span>
+                  <span aria-hidden="true" className="text-slate-600">·</span>
+                  <span className="text-slate-400">
+                    {currentPlan?.items.length || 0} movement{(currentPlan?.items.length || 0) !== 1 ? 's' : ''} currently logged
+                  </span>
+                </div>
               </div>
+
+              <div className="flex items-center gap-2">
+                {/* View Mode Toggle */}
+                <div className="flex items-center rounded-xl bg-[#141B24] border border-[#222E3E] p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setModalViewMode('list')}
+                    className={`p-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1 ${
+                      modalViewMode === 'list'
+                        ? 'bg-[#1E2A3A] text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    title="Detailed list view"
+                  >
+                    <List className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline text-[11px]">List</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalViewMode('grid')}
+                    className={`p-1.5 rounded-lg text-xs font-medium transition cursor-pointer flex items-center gap-1 ${
+                      modalViewMode === 'grid'
+                        ? 'bg-[#1E2A3A] text-white shadow-sm'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                    title="Card grid view"
+                  >
+                    <LayoutGrid className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline text-[11px]">Grid</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowAddModal(false)}
+                  className="p-1.5 rounded-xl bg-[#141B24] border border-[#222E3E] text-slate-400 hover:text-white hover:border-slate-500 transition cursor-pointer"
+                  title="Close modal"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Search Input & Muscle Category Filter */}
+            <div className="p-4 border-b border-[#1E2633] space-y-3 bg-[#0D1219]">
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search 800+ movements by name, muscle, or equipment..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#141B24] border border-[#243346] text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#FF334B] transition"
+                  autoFocus
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              {/* Muscle Category Filter Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs scrollbar-none">
+                {[
+                  { label: 'All', value: 'all' },
+                  { label: 'Chest', value: 'chest' },
+                  { label: 'Back', value: 'back' },
+                  { label: 'Legs', value: 'legs' },
+                  { label: 'Shoulders', value: 'shoulders' },
+                  { label: 'Arms', value: 'arms' },
+                  { label: 'Core', value: 'core' },
+                ].map((chip) => (
+                  <button
+                    key={chip.value}
+                    type="button"
+                    onClick={() => setModalMuscleFilter(chip.value)}
+                    className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition cursor-pointer border ${
+                      modalMuscleFilter === chip.value
+                        ? 'bg-[#FF334B]/15 border-[#FF334B] text-[#FF334B]'
+                        : 'bg-[#141B24] border-[#1F2A38] text-slate-400 hover:text-white hover:border-[#2C3B4E]'
+                    }`}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Hint badge */}
+              <div className="flex items-center justify-between text-[11px] text-slate-400 pt-0.5">
+                <span>
+                  Showing <strong className="text-white">{filteredModalExercises.length}</strong> movements
+                </span>
+                <span className="flex items-center gap-1 text-cyan-400">
+                  <Eye className="w-3 h-3" />
+                  <span>Click thumbnail or &ldquo;Details&rdquo; for full page guide</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Exercise List / Grid */}
+            <div className="p-4 overflow-y-auto flex-1">
+              {filteredModalExercises.length > 0 ? (
+                modalViewMode === 'list' ? (
+                  /* LIST VIEW: Large, clear thumbnails with detailed info */
+                  <div className="space-y-3">
+                    {filteredModalExercises.map((ex) => {
+                      const isRecentlyAdded = recentlyAddedId === ex.id;
+                      return (
+                        <div
+                          key={ex.id}
+                          className="p-3.5 rounded-2xl bg-[#141B24] border border-[#1E2837] hover:border-[#FF334B]/50 flex flex-col sm:flex-row sm:items-center justify-between gap-3.5 transition group"
+                        >
+                          {/* Left: Big Thumbnail + Exercise Info */}
+                          <div className="flex items-center gap-3.5">
+                            {/* Bigger Thumbnail (w-24 h-24 sm:w-28 sm:h-28) */}
+                            <div
+                              onClick={() => handleOpenDetailFromModal(ex)}
+                              className="w-24 h-24 sm:w-28 sm:h-28 rounded-xl bg-[#080B0F] border border-[#243142] overflow-hidden flex-shrink-0 cursor-pointer relative group/thumb flex items-center justify-center hover:border-[#FF334B] transition shadow-md"
+                              title="Click to view detailed exercise page"
+                            >
+                              {ex.images?.[0] ? (
+                                <img
+                                  src={getExerciseImageUrl(ex.images[0])}
+                                  alt={ex.name}
+                                  className="w-full h-full object-cover group-hover/thumb:scale-105 transition duration-300"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <Dumbbell className="w-8 h-8 text-slate-500" />
+                              )}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/thumb:opacity-100 flex flex-col items-center justify-center gap-1 transition-opacity backdrop-blur-[1px] text-white">
+                                <Eye className="w-5 h-5 text-cyan-400" />
+                                <span className="text-[10px] font-bold tracking-wider uppercase text-cyan-200">
+                                  View Details
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Details text */}
+                            <div className="space-y-1.5 flex-1 min-w-0">
+                              <h4
+                                onClick={() => handleOpenDetailFromModal(ex)}
+                                className="text-sm sm:text-base font-bold text-white hover:text-[#FF334B] cursor-pointer transition-colors line-clamp-1"
+                                title={ex.name}
+                              >
+                                {ex.name}
+                              </h4>
+
+                              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                                <span className="px-2 py-0.5 rounded-md bg-[#FF334B]/15 border border-[#FF334B]/30 text-[#FF334B] font-semibold capitalize">
+                                  {ex.primaryMuscles.join(', ')}
+                                </span>
+                                <span className="px-2 py-0.5 rounded-md bg-[#182230] border border-[#253346] text-slate-300 capitalize">
+                                  {ex.equipment || 'Body only'}
+                                </span>
+                                {ex.level && (
+                                  <span className="px-2 py-0.5 rounded-md bg-cyan-950/40 border border-cyan-800/40 text-cyan-300 font-mono text-[11px] uppercase">
+                                    {ex.level}
+                                  </span>
+                                )}
+                              </div>
+
+                              {ex.secondaryMuscles && ex.secondaryMuscles.length > 0 && (
+                                <p className="text-[11px] text-slate-400 line-clamp-1">
+                                  Secondary:{' '}
+                                  <span className="text-slate-300 capitalize">
+                                    {ex.secondaryMuscles.slice(0, 3).join(', ')}
+                                  </span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Right: Actions */}
+                          <div className="flex items-center gap-2 self-end sm:self-center flex-shrink-0">
+                            {/* Option to go to page in detailed manner */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenDetailFromModal(ex)}
+                              className="px-3 py-2 rounded-xl bg-[#192330] hover:bg-[#223145] border border-[#2A394D] text-slate-200 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer"
+                              title="Go to detailed exercise guide page"
+                            >
+                              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                              <span>View Details</span>
+                            </button>
+
+                            {/* Add to Routine button */}
+                            <button
+                              type="button"
+                              onClick={() => handleAddExerciseToCurrentPlan(ex)}
+                              className={`px-3.5 py-2 rounded-xl font-bold text-xs transition cursor-pointer flex items-center gap-1.5 ${
+                                isRecentlyAdded
+                                  ? 'bg-emerald-400 text-slate-950 shadow-[0_0_14px_rgba(16,185,129,0.6)]'
+                                  : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                              }`}
+                            >
+                              {isRecentlyAdded ? (
+                                <>
+                                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                  <span>Added!</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                                  <span>Add to Routine</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  /* GRID VIEW: Spacious card view with large media header */
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+                    {filteredModalExercises.map((ex) => {
+                      const isRecentlyAdded = recentlyAddedId === ex.id;
+                      return (
+                        <div
+                          key={ex.id}
+                          className="rounded-2xl bg-[#141B24] border border-[#1E2837] hover:border-[#FF334B]/60 transition overflow-hidden flex flex-col group shadow-lg"
+                        >
+                          {/* Card Image Header with Zoom & Inspect overlay */}
+                          <div
+                            onClick={() => handleOpenDetailFromModal(ex)}
+                            className="relative aspect-[16/10] w-full bg-[#080B0F] overflow-hidden cursor-pointer group/img flex items-center justify-center border-b border-[#1E2837]"
+                          >
+                            {ex.images?.[0] ? (
+                              <img
+                                src={getExerciseImageUrl(ex.images[0])}
+                                alt={ex.name}
+                                className="w-full h-full object-cover group-hover/img:scale-105 transition duration-300"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <Dumbbell className="w-8 h-8 text-slate-500" />
+                            )}
+
+                            {ex.level && (
+                              <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-[#0B0F14]/85 border border-[#232F3E] text-[10px] font-mono uppercase text-cyan-300 backdrop-blur-sm">
+                                {ex.level}
+                              </div>
+                            )}
+
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover/img:opacity-100 flex flex-col items-center justify-center gap-1 transition-opacity backdrop-blur-[1px] text-white">
+                              <Eye className="w-5 h-5 text-cyan-400" />
+                              <span className="text-[11px] font-bold tracking-wide uppercase text-cyan-200">
+                                View Details Page
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Card Content */}
+                          <div className="p-3.5 flex-1 flex flex-col justify-between space-y-3">
+                            <div>
+                              <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                                <span className="text-[#FF334B] font-semibold capitalize">
+                                  {ex.primaryMuscles[0] || 'Target'}
+                                </span>
+                                <span aria-hidden="true" className="text-slate-600">·</span>
+                                <span className="capitalize">{ex.equipment || 'Body only'}</span>
+                              </div>
+
+                              <h4
+                                onClick={() => handleOpenDetailFromModal(ex)}
+                                className="text-sm font-bold text-white hover:text-[#FF334B] cursor-pointer transition-colors line-clamp-1 mt-1"
+                                title={ex.name}
+                              >
+                                {ex.name}
+                              </h4>
+                            </div>
+
+                            {/* Card Footer Actions */}
+                            <div className="pt-2 border-t border-[#1C2636] flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => handleOpenDetailFromModal(ex)}
+                                className="flex-1 py-1.5 rounded-xl bg-[#192330] hover:bg-[#223145] border border-[#2A394D] text-slate-200 hover:text-white text-xs font-semibold flex items-center justify-center gap-1 transition cursor-pointer"
+                                title="Open full exercise page"
+                              >
+                                <Eye className="w-3 h-3 text-cyan-400" />
+                                <span>Details</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handleAddExerciseToCurrentPlan(ex)}
+                                className={`flex-1 py-1.5 rounded-xl font-bold text-xs transition cursor-pointer flex items-center justify-center gap-1 ${
+                                  isRecentlyAdded
+                                    ? 'bg-emerald-400 text-slate-950 shadow-[0_0_12px_rgba(16,185,129,0.6)]'
+                                    : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[0_0_10px_rgba(16,185,129,0.3)]'
+                                }`}
+                              >
+                                {isRecentlyAdded ? (
+                                  <>
+                                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                    <span>Added!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                                    <span>Add</span>
+                                  </>
+                                )}
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )
+              ) : (
+                /* Empty search results */
+                <div className="p-10 text-center rounded-2xl bg-[#121822] border border-[#1E2633] space-y-3">
+                  <Dumbbell className="w-10 h-10 text-slate-600 mx-auto" />
+                  <h4 className="text-sm font-bold text-white">No Exercises Match Filters</h4>
+                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                    Try searching for another movement name or switch the muscle category filter above.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchQuery('');
+                      setModalMuscleFilter('all');
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#FF334B] text-white text-xs font-bold shadow-[0_0_12px_rgba(255,51,75,0.4)] cursor-pointer"
+                  >
+                    Clear Search & Filters
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 sm:p-4 border-t border-[#1E2633] bg-[#0D1219] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-xs text-slate-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span>
+                  Target Routine: <strong className="text-white">{currentPlan?.name}</strong> ({currentPlan?.items.length || 0} exercises)
+                </span>
+              </div>
+
               <button
                 type="button"
                 onClick={() => setShowAddModal(false)}
-                className="text-slate-400 hover:text-white p-1 cursor-pointer text-lg font-bold"
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:opacity-95 text-slate-950 font-bold text-xs shadow-[0_0_12px_rgba(16,185,129,0.3)] transition cursor-pointer"
               >
-                ✕
+                Done
               </button>
-            </div>
-
-            {/* Search Input */}
-            <div className="p-4 border-b border-[#1E2633]">
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search 800+ movements (e.g., bench, squat, bicep)..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#141B24] border border-[#243346] text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#FF334B]"
-                  autoFocus
-                />
-              </div>
-            </div>
-
-            {/* Exercise List */}
-            <div className="p-4 overflow-y-auto flex-1 space-y-2">
-              {filteredModalExercises.map((ex) => (
-                <div
-                  key={ex.id}
-                  className="p-3 rounded-xl bg-[#141B24] border border-[#1E2837] hover:border-[#FF334B]/50 flex items-center justify-between gap-3 transition"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-lg bg-[#0B0F14] overflow-hidden flex-shrink-0 flex items-center justify-center">
-                      {ex.images?.[0] ? (
-                        <img
-                          src={getExerciseImageUrl(ex.images[0])}
-                          alt={ex.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Dumbbell className="w-5 h-5 text-slate-500" />
-                      )}
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white line-clamp-1">
-                        {ex.name}
-                      </h4>
-                      <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                        <span className="text-[#FF334B] font-semibold capitalize">
-                          {ex.primaryMuscles.join(', ')}
-                        </span>
-                        <span aria-hidden="true" className="text-slate-600">·</span>
-                        <span className="capitalize">{ex.equipment || 'Body only'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => handleAddExerciseToCurrentPlan(ex)}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-[0_0_10px_rgba(16,185,129,0.3)] transition cursor-pointer flex items-center gap-1"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Add</span>
-                  </button>
-                </div>
-              ))}
             </div>
           </div>
         </div>

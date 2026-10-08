@@ -50,6 +50,7 @@ export default function App() {
 
   // Navigation & selection state
   const [currentView, setCurrentView] = useState<ViewMode>('home');
+  const [previousView, setPreviousView] = useState<ViewMode>('exercises');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroupKey | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<RawExercise | null>(null);
 
@@ -122,7 +123,11 @@ export default function App() {
 
   const handleOpenExerciseDetail = (exercise: RawExercise) => {
     setSelectedExercise(exercise);
+    if (currentView !== 'detail') {
+      setPreviousView(currentView);
+    }
     setCurrentView('detail');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   // Filter exercises
@@ -528,7 +533,17 @@ export default function App() {
             {currentView === 'detail' && selectedExercise && (
               <ExerciseDetail
                 exercise={selectedExercise}
-                onBack={() => setCurrentView('exercises')}
+                onBack={() => {
+                  setCurrentView(previousView || 'exercises');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                backLabel={
+                  previousView === 'builder'
+                    ? 'Back to Routine Planner'
+                    : previousView === 'heatmap'
+                    ? 'Back to Heatmap'
+                    : 'Back to Exercise Library'
+                }
                 workoutPlans={workoutPlans}
                 activePlanId={activePlanId}
                 onAddExerciseToPlan={handleAddExerciseToPlanDirect}

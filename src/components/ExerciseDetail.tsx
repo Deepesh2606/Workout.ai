@@ -23,6 +23,7 @@ import { FormGuideCard } from './FormGuideCard';
 interface ExerciseDetailProps {
   exercise: RawExercise;
   onBack: () => void;
+  backLabel?: string;
   workoutPlans: WorkoutDayPlan[];
   activePlanId: string;
   onAddExerciseToPlan: (planId: string, exercise: RawExercise, sets: number, reps: number) => void;
@@ -32,6 +33,7 @@ interface ExerciseDetailProps {
 export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
   exercise,
   onBack,
+  backLabel,
   workoutPlans,
   activePlanId,
   onAddExerciseToPlan,
@@ -46,6 +48,13 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
   const [setsCount, setSetsCount] = useState(3);
   const [repsCount, setRepsCount] = useState(10);
   const [addedToast, setAddedToast] = useState(false);
+
+  // Sync selectedPlanId with activePlanId when it changes
+  useEffect(() => {
+    if (activePlanId) {
+      setSelectedPlanId(activePlanId);
+    }
+  }, [activePlanId]);
 
   // Auto-looping slideshow
   useEffect(() => {
@@ -82,10 +91,10 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
         <button
           type="button"
           onClick={onBack}
-          className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#141B24] border border-[#232F3E] text-slate-300 hover:text-white hover:border-slate-500 transition-colors text-sm font-medium cursor-pointer"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#141B24] border border-[#232F3E] text-slate-300 hover:text-white hover:border-slate-500 transition-colors text-sm font-medium cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Back to Library</span>
+          <span>{backLabel || 'Back to Library'}</span>
         </button>
 
         <div className="flex items-center gap-2">
