@@ -217,9 +217,13 @@ export const WorkoutBuilder: React.FC<WorkoutBuilderProps> = ({
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Workout Day Planner
             </h1>
+            <span className="ml-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[10px] font-semibold tracking-wide uppercase flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              Supabase Connected
+            </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Build custom day routines, log sets & reps, automatically saved to localStorage
+            Build custom day routines, log sets & reps — automatically synced to Supabase database & offline cache
           </p>
         </div>
 

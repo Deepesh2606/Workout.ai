@@ -274,5 +274,203 @@ export const FALLBACK_EXERCISES: RawExercise[] = [
     ],
     category: 'strength',
     images: ['Cable_Crunch/0.jpg', 'Cable_Crunch/1.jpg']
+  },
+  {
+    id: 'Barbell_Wrist_Curl',
+    name: 'Barbell Wrist Curl',
+    force: 'pull',
+    level: 'beginner',
+    mechanic: 'isolation',
+    equipment: 'barbell',
+    primaryMuscles: ['forearms'],
+    secondaryMuscles: [],
+    instructions: [
+      'Sit on a bench and hold a barbell with an underhand (supinated) grip, wrists hanging off the edge of your knees.',
+      'Let the barbell roll down to your fingertips to maximise the stretch.',
+      'Curl the barbell back up by flexing your wrists and squeezing the forearm flexors at the top.',
+      'Lower under control and repeat for the prescribed reps without swinging the arms.'
+    ],
+    category: 'strength',
+    images: ['Barbell_Wrist_Curl/0.jpg', 'Barbell_Wrist_Curl/1.jpg']
+  },
+  {
+    id: 'Reverse_Barbell_Curl',
+    name: 'Reverse Barbell Curl',
+    force: 'pull',
+    level: 'beginner',
+    mechanic: 'isolation',
+    equipment: 'barbell',
+    primaryMuscles: ['forearms'],
+    secondaryMuscles: ['biceps'],
+    instructions: [
+      'Stand holding a barbell with a pronated (overhand) shoulder-width grip, arms fully extended.',
+      'Keeping upper arms pinned to your sides, curl the bar upward by flexing wrists and elbows.',
+      'Raise until forearms are perpendicular to the floor and brachioradialis is fully contracted.',
+      'Lower the bar back slowly in 2-3 seconds, resisting gravity, and repeat.'
+    ],
+    category: 'strength',
+    images: ['Reverse_Barbell_Curl/0.jpg', 'Reverse_Barbell_Curl/1.jpg']
+  },
+  {
+    id: 'Hanging_Leg_Raise',
+    name: 'Hanging Leg Raise',
+    force: 'pull',
+    level: 'intermediate',
+    mechanic: 'isolation',
+    equipment: 'body only',
+    primaryMuscles: ['abdominals'],
+    secondaryMuscles: ['hip flexors'],
+    instructions: [
+      'Hang from a pull-up bar with an overhand grip, arms fully extended and shoulders packed.',
+      'Engage your core and tuck your pelvis slightly to eliminate the lower-back arch.',
+      'Raise your legs straight up until they are parallel to the floor or beyond.',
+      'Lower your legs slowly with control, avoiding any swinging momentum.'
+    ],
+    category: 'strength',
+    images: ['Hanging_Leg_Raise/0.jpg', 'Hanging_Leg_Raise/1.jpg']
+  },
+  {
+    id: 'Tricep_Pushdown_Cable',
+    name: 'Cable Tricep Pushdown',
+    force: 'push',
+    level: 'beginner',
+    mechanic: 'isolation',
+    equipment: 'cable',
+    primaryMuscles: ['triceps'],
+    secondaryMuscles: [],
+    instructions: [
+      'Stand in front of a high cable machine and grip a straight bar with an overhand grip.',
+      'Keep elbows tucked close to your sides and upper arms stationary throughout.',
+      'Push the bar down until arms are fully extended and triceps are squeezed hard.',
+      'Let the bar return slowly to the start position under full control, feeling the stretch at the top.'
+    ],
+    category: 'strength',
+    images: ['Tricep_Pushdown_Cable/0.jpg', 'Tricep_Pushdown_Cable/1.jpg']
+  },
+  {
+    id: 'Barbell_Overhead_Press',
+    name: 'Barbell Overhead Press',
+    force: 'push',
+    level: 'intermediate',
+    mechanic: 'compound',
+    equipment: 'barbell',
+    primaryMuscles: ['shoulders'],
+    secondaryMuscles: ['triceps', 'traps'],
+    instructions: [
+      'Stand with feet shoulder-width apart, gripping the barbell just outside shoulder width at collarbone level.',
+      'Brace your core, squeeze your glutes, and press the bar straight overhead until arms are locked out.',
+      'At the top, shrug your traps slightly to achieve a strong lockout position.',
+      'Lower the bar back to collarbone level in a controlled manner, keeping elbows slightly forward.'
+    ],
+    category: 'strength',
+    images: ['Barbell_Overhead_Press/0.jpg', 'Barbell_Overhead_Press/1.jpg']
+  },
+  {
+    id: 'Leg_Press',
+    name: 'Leg Press',
+    force: 'push',
+    level: 'beginner',
+    mechanic: 'compound',
+    equipment: 'machine',
+    primaryMuscles: ['quadriceps'],
+    secondaryMuscles: ['glutes', 'hamstrings', 'calves'],
+    instructions: [
+      'Sit in the leg press machine and place your feet shoulder-width apart on the platform.',
+      'Disengage the safety handles and lower the platform by bending your knees to approximately 90 degrees.',
+      'Push through your heels and extend your legs to press the platform back up, without locking out your knees.',
+      'Control the descent on every rep, maintaining constant tension on the quads.'
+    ],
+    category: 'strength',
+    images: ['Leg_Press/0.jpg', 'Leg_Press/1.jpg']
+  },
+  {
+    id: 'Lying_Leg_Curl',
+    name: 'Lying Leg Curl',
+    force: 'pull',
+    level: 'beginner',
+    mechanic: 'isolation',
+    equipment: 'machine',
+    primaryMuscles: ['hamstrings'],
+    secondaryMuscles: ['calves'],
+    instructions: [
+      'Lie face down on the leg curl machine with ankles under the padded lever and knees just off the edge.',
+      'Curl your legs up toward your glutes as far as possible by flexing the hamstrings.',
+      'Squeeze at the peak contraction for a second, then slowly lower back to the starting position.',
+      'Avoid lifting your hips off the bench or using momentum to swing the weight.'
+    ],
+    category: 'strength',
+    images: ['Lying_Leg_Curl/0.jpg', 'Lying_Leg_Curl/1.jpg']
+  },
+  {
+    id: 'Ab_Wheel_Rollout',
+    name: 'Ab Wheel Rollout',
+    force: 'pull',
+    level: 'intermediate',
+    mechanic: 'compound',
+    equipment: 'other',
+    primaryMuscles: ['abdominals'],
+    secondaryMuscles: ['lower back', 'shoulders'],
+    instructions: [
+      'Kneel on a mat and grip an ab wheel with both hands directly under your shoulders.',
+      'Brace your core hard and slowly roll the wheel forward until your body is nearly parallel to the floor.',
+      'Pause briefly at full extension, then contract your abs to pull the wheel back to the starting position.',
+      'Do not allow your hips to sag or lower back to arch during the movement.'
+    ],
+    category: 'strength',
+    images: ['Ab_Wheel_Rollout/0.jpg', 'Ab_Wheel_Rollout/1.jpg']
+  },
+  {
+    id: 'Skull_Crushers',
+    name: 'EZ-Bar Skull Crusher',
+    force: 'push',
+    level: 'intermediate',
+    mechanic: 'isolation',
+    equipment: 'e-z curl bar',
+    primaryMuscles: ['triceps'],
+    secondaryMuscles: [],
+    instructions: [
+      'Lie flat on a bench and hold an EZ-curl bar with a narrow overhand grip above your forehead, arms extended.',
+      'Keeping your upper arms vertical and elbows fixed, lower the bar toward your forehead or just above it.',
+      'Pause at the bottom for a full tricep stretch without touching your forehead.',
+      'Press the bar back up by extending your elbows, squeezing your triceps hard at lockout.'
+    ],
+    category: 'strength',
+    images: ['Skull_Crushers/0.jpg', 'Skull_Crushers/1.jpg']
+  },
+  {
+    id: 'Hammer_Curl',
+    name: 'Dumbbell Hammer Curl',
+    force: 'pull',
+    level: 'beginner',
+    mechanic: 'isolation',
+    equipment: 'dumbbell',
+    primaryMuscles: ['biceps'],
+    secondaryMuscles: ['forearms'],
+    instructions: [
+      'Stand holding a dumbbell in each hand with a neutral (hammer) grip, palms facing each other.',
+      'Keep your upper arms stationary and curl the weight forward while contracting the biceps.',
+      'Continue until the dumbbells are at shoulder level and the brachialis is fully contracted.',
+      'Slowly lower back to the starting position as you inhale, maintaining the neutral wrist position.'
+    ],
+    category: 'strength',
+    images: ['Hammer_Curl/0.jpg', 'Hammer_Curl/1.jpg']
+  },
+  {
+    id: 'Face_Pull',
+    name: 'Cable Face Pull',
+    force: 'pull',
+    level: 'beginner',
+    mechanic: 'compound',
+    equipment: 'cable',
+    primaryMuscles: ['shoulders'],
+    secondaryMuscles: ['traps', 'biceps'],
+    instructions: [
+      'Set a cable pulley at head height and attach a rope. Grasp both ends with an overhand grip.',
+      'Step back to create tension and position your body with arms extended in front of you.',
+      'Pull the rope toward your face, driving your elbows back and out to the sides.',
+      'At peak contraction your hands should be beside your ears. Squeeze rear delts and hold briefly.'
+    ],
+    category: 'strength',
+    images: ['Face_Pull/0.jpg', 'Face_Pull/1.jpg']
   }
 ];

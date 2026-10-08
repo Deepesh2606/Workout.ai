@@ -30,6 +30,7 @@ import {
   getActivePlanId,
   saveActivePlanId,
   addExerciseToPlan,
+  loadPlansFromSupabase,
 } from './services/storageService';
 import { MUSCLE_GROUPS } from './data/muscleGroups';
 import { Navbar } from './components/Navbar';
@@ -70,18 +71,22 @@ export default function App() {
   // Initial load
   useEffect(() => {
     async function initData() {
+      // Load exercises
       const { exercises: loaded, isFromCache } = await fetchExercisesWithCache();
       if (loaded && loaded.length > 0) {
         setExercises(loaded);
         setIsCached(isFromCache);
       }
-
-      // Background silent sync
+      // Background silent exercise sync
       syncExercisesBackground((fresh) => {
-        if (fresh && fresh.length > 0) {
-          setExercises(fresh);
-        }
+        if (fresh && fresh.length > 0) setExercises(fresh);
       });
+
+      // Load workout plans from Supabase (falls back to localStorage if offline)
+      const { plans: remotePlans, activePlanId: remoteActiveId } =
+        await loadPlansFromSupabase();
+      setWorkoutPlans(remotePlans);
+      setActivePlanId(remoteActiveId);
     }
 
     initData();
