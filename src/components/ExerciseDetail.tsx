@@ -268,11 +268,11 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-[#FF334B]" />
                 <h3 className="text-base font-bold text-white tracking-tight">
-                  Target Muscle Heatmap
+                  Target Muscle Anatomy
                 </h3>
               </div>
-              <span className="text-[11px] font-mono text-slate-400">
-                react-body-highlighter
+              <span className="text-[11px] font-mono text-cyan-400">
+                MuscleMap SVG
               </span>
             </div>
 
@@ -298,7 +298,8 @@ export const ExerciseDetail: React.FC<ExerciseDetailProps> = ({
             <BodyVisualizer
               primaryMuscles={exercise.primaryMuscles}
               secondaryMuscles={exercise.secondaryMuscles}
-              height={380}
+              exerciseName={exercise.name}
+              height={400}
             />
 
             <div className="flex items-center gap-2 text-[11px] text-slate-400 p-2.5 rounded-lg bg-[#121822] border border-[#1E2633]">

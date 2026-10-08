@@ -5,7 +5,7 @@ export interface MuscleGroupInfo {
   name: string;
   tagline: string;
   dbMuscles: string[]; // matches free-exercise-db primaryMuscles
-  highlighterMuscles: string[]; // matches react-body-highlighter
+  highlighterMuscles: string[]; // matches MuscleMap keys
   viewDefault: 'anterior' | 'posterior';
   colorHex: string;
   iconName: string;
@@ -103,25 +103,25 @@ export const MUSCLE_GROUPS: MuscleGroupInfo[] = [
   },
 ];
 
-// Mapping helper from free-exercise-db muscle string to react-body-highlighter Muscle identifiers
+// Mapping helper from free-exercise-db muscle string to MuscleMap identifiers (e.g. front-deltoid, trapezius)
 export const FREE_DB_TO_HIGHLIGHTER_MAP: Record<string, string[]> = {
-  abdominals: ['abs', 'obliques'],
-  chest: ['chest'],
+  abdominals: ['abs', 'upper-abs', 'lower-abs', 'obliques'],
+  chest: ['chest', 'upper-chest', 'lower-chest'],
   biceps: ['biceps'],
   triceps: ['triceps'],
-  shoulders: ['front-deltoids', 'back-deltoids'],
-  'middle back': ['upper-back'],
+  shoulders: ['front-deltoid', 'deltoids'],
+  'middle back': ['upper-back', 'rhomboids'],
   lats: ['upper-back'],
   'lower back': ['lower-back'],
-  traps: ['trapezius'],
+  traps: ['trapezius', 'upper-trapezius'],
   forearms: ['forearm'],
   glutes: ['gluteal'],
   hamstrings: ['hamstring'],
-  quadriceps: ['quadriceps'],
-  calves: ['calves'],
-  adductors: ['adductor'],
-  abductors: ['abductors'],
-  neck: ['neck'],
+  quadriceps: ['quadriceps', 'inner-quad', 'outer-quad'],
+  calves: ['calves', 'tibialis'],
+  adductors: ['adductors'],
+  abductors: ['deltoids', 'gluteal'],
+  neck: ['neck', 'trapezius'],
 };
 
 // Posterior-focused muscles helper

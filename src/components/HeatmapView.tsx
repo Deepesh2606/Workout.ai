@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Muscle } from 'react-body-highlighter';
+import { Muscle, MUSCLE_METADATA } from '../data/muscleMap';
 import {
   Flame,
   Activity,
@@ -315,9 +315,14 @@ export const HeatmapView: React.FC<HeatmapViewProps> = ({
                                     : '#06B6D4',
                               }}
                             />
-                            <h4 className="text-sm font-semibold text-white capitalize">
-                              {stat.muscle}
-                            </h4>
+                            <div>
+                              <h4 className="text-sm font-semibold text-white">
+                                {MUSCLE_METADATA[stat.muscle as Muscle]?.name || stat.muscle}
+                              </h4>
+                              <span className="text-[10px] text-slate-400 font-mono">
+                                {MUSCLE_METADATA[stat.muscle as Muscle]?.anatomicalName || ''}
+                              </span>
+                            </div>
                           </div>
 
                           <div className="flex items-center gap-2 font-mono text-xs">
