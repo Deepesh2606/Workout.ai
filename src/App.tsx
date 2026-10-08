@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
 import {
   Search,
   SlidersHorizontal,
@@ -53,6 +54,10 @@ export default function App() {
   const [previousView, setPreviousView] = useState<ViewMode>('exercises');
   const [selectedMuscle, setSelectedMuscle] = useState<MuscleGroupKey | null>(null);
   const [selectedExercise, setSelectedExercise] = useState<RawExercise | null>(null);
+
+  // Smooth page loading & transition state
+  const [isPageTransitioning, setIsPageTransitioning] = useState(false);
+  const [transitionProgress, setTransitionProgress] = useState(0);
 
   // Filter state for Exercise catalog
   const [searchQuery, setSearchQuery] = useState('');
@@ -114,20 +119,52 @@ export default function App() {
     handleUpdatePlans(updated);
   };
 
+  // Smooth page switching handler
+  const navigateToView = (newView: ViewMode, beforeNavigate?: () => void) => {
+    if (newView === currentView && !beforeNavigate) return;
+
+    if (beforeNavigate) beforeNavigate();
+
+    setIsPageTransitioning(true);
+    setTransitionProgress(40);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const t1 = setTimeout(() => {
+      setTransitionProgress(80);
+      setCurrentView(newView);
+    }, 110);
+
+    const t2 = setTimeout(() => {
+      setTransitionProgress(100);
+    }, 220);
+
+    const t3 = setTimeout(() => {
+      setIsPageTransitioning(false);
+      setTransitionProgress(0);
+    }, 320);
+
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  };
+
   // Home: clicking a muscle group triggers filtering into Exercises view
   const handleSelectMuscleGroup = (key: MuscleGroupKey) => {
-    setSelectedMuscle(key);
-    setCurrentView('exercises');
-    setVisibleCount(24);
+    navigateToView('exercises', () => {
+      setSelectedMuscle(key);
+      setVisibleCount(24);
+    });
   };
 
   const handleOpenExerciseDetail = (exercise: RawExercise) => {
-    setSelectedExercise(exercise);
-    if (currentView !== 'detail') {
-      setPreviousView(currentView);
-    }
-    setCurrentView('detail');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    navigateToView('detail', () => {
+      if (currentView !== 'detail') {
+        setPreviousView(currentView);
+      }
+      setSelectedExercise(exercise);
+    });
   };
 
   // Filter exercises
@@ -155,14 +192,32 @@ export default function App() {
   }, [exercises]);
 
   return (
-    <div className="min-h-screen bg-[#0B0F14] text-slate-100 flex flex-col font-sans pb-20 md:pb-8 selection:bg-[#FF334B] selection:text-white">
+    <div className="min-h-screen bg-[#0B0F14] text-slate-100 flex flex-col font-sans pb-20 md:pb-8 selection:bg-[#FF334B] selection:text-white relative">
+      {/* Top Global Smooth Loading Progress Bar */}
+      {(isPageTransitioning || transitionProgress > 0) && (
+        <div className="fixed top-0 left-0 right-0 z-[100] h-[3px] bg-transparent pointer-events-none overflow-hidden">
+          <div
+            className="h-full bg-gradient-to-r from-[#FF334B] via-[#FB923C] to-[#10B981] shadow-[0_0_12px_rgba(255,51,75,0.9)] transition-all duration-150 ease-out"
+            style={{
+              width: `${transitionProgress}%`,
+              opacity: transitionProgress === 100 ? 0 : 1,
+            }}
+          />
+        </div>
+      )}
+
+      {/* Subtle Floating Page Switching Pill */}
+      {isPageTransitioning && (
+        <div className="fixed bottom-6 right-6 z-50 px-3.5 py-1.5 rounded-full bg-[#0F141C]/90 border border-[#232F3E] text-slate-200 text-xs font-mono shadow-2xl flex items-center gap-2 backdrop-blur-md pointer-events-none animate-in fade-in">
+          <span className="w-2 h-2 rounded-full bg-[#FF334B] animate-ping" />
+          <span>Switching view...</span>
+        </div>
+      )}
+
       {/* Top and Mobile Navigation */}
       <Navbar
         currentView={currentView}
-        onNavigate={(view) => {
-          setCurrentView(view);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
+        onNavigate={(view) => navigateToView(view)}
         workoutPlanCount={workoutPlans.reduce(
           (acc, p) => acc + (p.items?.length || 0),
           0
@@ -170,7 +225,7 @@ export default function App() {
       />
 
       {/* Main Content Area */}
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full relative">
         {isLoading ? (
           <div className="min-h-[70vh] flex flex-col items-center justify-center p-6 space-y-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-[#FF334B] to-[#F97316] flex items-center justify-center animate-pulse shadow-[0_0_25px_rgba(255,51,75,0.5)]">
@@ -186,7 +241,15 @@ export default function App() {
             </div>
           </div>
         ) : (
-          <>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+              className="w-full"
+            >
             {/* VIEW 1: HOME */}
             {currentView === 'home' && (
               <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-8">
@@ -216,10 +279,9 @@ export default function App() {
                     <div className="flex flex-wrap items-center gap-3 pt-2">
                       <button
                         type="button"
-                        onClick={() => {
-                          setSelectedMuscle(null);
-                          setCurrentView('exercises');
-                        }}
+                        onClick={() =>
+                          navigateToView('exercises', () => setSelectedMuscle(null))
+                        }
                         className="px-5 py-3 rounded-xl bg-gradient-to-r from-[#FF334B] to-[#F97316] text-white font-bold text-sm shadow-[0_0_20px_rgba(255,51,75,0.4)] hover:opacity-95 transition cursor-pointer flex items-center gap-2"
                       >
                         <Dumbbell className="w-4 h-4" />
@@ -228,7 +290,7 @@ export default function App() {
 
                       <button
                         type="button"
-                        onClick={() => setCurrentView('heatmap')}
+                        onClick={() => navigateToView('heatmap')}
                         className="px-5 py-3 rounded-xl bg-[#141D29] border border-[#26364D] hover:border-slate-400 text-slate-200 font-bold text-sm transition cursor-pointer flex items-center gap-2"
                       >
                         <Flame className="w-4 h-4 text-[#FF334B]" />
@@ -255,10 +317,9 @@ export default function App() {
 
                     <button
                       type="button"
-                      onClick={() => {
-                        setSelectedMuscle(null);
-                        setCurrentView('exercises');
-                      }}
+                      onClick={() =>
+                        navigateToView('exercises', () => setSelectedMuscle(null))
+                      }
                       className="text-xs font-semibold text-[#FF334B] hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       <span>View All</span>
@@ -276,7 +337,7 @@ export default function App() {
                 {/* Section 2: Quick Features Highlight */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div
-                    onClick={() => setCurrentView('heatmap')}
+                    onClick={() => navigateToView('heatmap')}
                     className="p-5 rounded-2xl bg-[#0F141C] border border-[#1E2633] hover:border-[#FF334B]/60 transition-all cursor-pointer group space-y-2.5"
                   >
                     <div className="w-10 h-10 rounded-xl bg-[#FF334B]/15 border border-[#FF334B]/30 flex items-center justify-center text-[#FF334B]">
@@ -291,7 +352,7 @@ export default function App() {
                   </div>
 
                   <div
-                    onClick={() => setCurrentView('builder')}
+                    onClick={() => navigateToView('builder')}
                     className="p-5 rounded-2xl bg-[#0F141C] border border-[#1E2633] hover:border-[#10B981]/60 transition-all cursor-pointer group space-y-2.5"
                   >
                     <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
@@ -534,8 +595,7 @@ export default function App() {
               <ExerciseDetail
                 exercise={selectedExercise}
                 onBack={() => {
-                  setCurrentView(previousView || 'exercises');
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  navigateToView(previousView || 'exercises');
                 }}
                 backLabel={
                   previousView === 'builder'
@@ -552,8 +612,7 @@ export default function App() {
                     g.dbMuscles.includes(muscle.toLowerCase())
                   );
                   if (matched) {
-                    setSelectedMuscle(matched.key);
-                    setCurrentView('exercises');
+                    navigateToView('exercises', () => setSelectedMuscle(matched.key));
                   }
                 }}
               />
@@ -567,7 +626,7 @@ export default function App() {
                 allExercises={exercises}
                 onSelectPlanId={handleSelectPlanId}
                 onUpdatePlans={handleUpdatePlans}
-                onViewHeatmap={() => setCurrentView('heatmap')}
+                onViewHeatmap={() => navigateToView('heatmap')}
                 onSelectExerciseDetail={handleOpenExerciseDetail}
               />
             )}
@@ -578,15 +637,16 @@ export default function App() {
                 plans={workoutPlans}
                 activePlanId={activePlanId}
                 onSelectPlanId={handleSelectPlanId}
-                onGoToBuilder={() => setCurrentView('builder')}
+                onGoToBuilder={() => navigateToView('builder')}
                 onSelectExercise={(id) => {
                   const found = exercises.find((e) => e.id === id);
                   if (found) handleOpenExerciseDetail(found);
                 }}
               />
             )}
-          </>
-        )}
+          </motion.div>
+        </AnimatePresence>
+      )}
       </main>
     </div>
   );
